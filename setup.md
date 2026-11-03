@@ -74,3 +74,46 @@ Følgende Cypher-kommando kan bruges til at oprette et Vector Index i Neo4j med 
 
 CREATE VECTOR INDEX film_embeddings IF NOT EXISTS FOR (f:Film) ON (f.embedding) OPTIONS {indexConfig: {vector.dimensions: 768, vector.similarity_function: 'cosine'}};
 
+## Oprettelse af filmdata
+Jeg har oprettet 10 film i Neo4j med titel, årstal, genre og beskrivelse.
+Filmene kan oprettes med følgende Cypher-kommandoe:MERGE (f:Film {title: "Inception"})
+SET f.year = 2010, f.genre = "Science Fiction",
+    f.description = "En tyv kan trænge ind i menneskers drømme og stjæle hemmeligheder.";
+
+MERGE (f:Film {title: "Titanic"})
+SET f.year = 1997, f.genre = "Romance",
+    f.description = "To unge mennesker forelsker sig ombord på skibet Titanic.";
+
+MERGE (f:Film {title: "Interstellar"})
+SET f.year = 2014, f.genre = "Science Fiction",
+    f.description = "En gruppe astronauter rejser gennem rummet for at finde et nyt hjem til menneskeheden.";
+
+MERGE (f:Film {title: "The Dark Knight"})
+SET f.year = 2008, f.genre = "Action",
+    f.description = "Batman forsøger at stoppe Jokeren, som skaber kaos i Gotham City.";
+
+MERGE (f:Film {title: "The Wolf of Wall Street"})
+SET f.year = 2013, f.genre = "Drama",
+    f.description = "En børsmægler bliver rig gennem svindel og et liv fyldt med luksus.";
+
+MERGE (f:Film {title: "Avatar"})
+SET f.year = 2009, f.genre = "Science Fiction",
+    f.description = "En tidligere soldat rejser til Pandora og bliver en del af Na'vi-folkets kamp.";
+
+MERGE (f:Film {title: "Barbie"})
+SET f.year = 2023, f.genre = "Comedy",
+    f.description = "Barbie forlader Barbieland og oplever den virkelige verden.";
+
+MERGE (f:Film {title: "Oppenheimer"})
+SET f.year = 2023, f.genre = "Drama",
+    f.description = "Historien om fysikeren J. Robert Oppenheimer og udviklingen af atombomben.";
+
+MERGE (f:Film {title: "The Notebook"})
+SET f.year = 2004, f.genre = "Romance",
+    f.description = "To unge mennesker forelsker sig, men deres forskellige baggrunde skaber problemer.";
+
+MERGE (f:Film {title: "Django Unchained"})
+SET f.year = 2012, f.genre = "Western",
+    f.description = "En tidligere slave samarbejder med en dusørjæger for at redde sin kone.";
+
+n
