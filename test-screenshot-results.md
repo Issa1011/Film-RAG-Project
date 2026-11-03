@@ -7,6 +7,8 @@
 
 **Resultat:** Agenten svarede korrekt, at Christopher Nolan har instrueret Interstellar, men nævnte også Titanic, hvilket er forkert.
 
+**Vurdering:** Graph RAG fandt den rigtige instruktør til Interstellar, men agenten tilføjede en forkert oplysning om Titanic. Det viser, at AI-agenten stadig kan lave fejl, selvom den bruger oplysninger fra databasen.
+
 <img width="2048" height="1342" alt="image" src="https://github.com/user-attachments/assets/2fbd8898-381e-43a6-a791-988ead9f749e" />
 
 
