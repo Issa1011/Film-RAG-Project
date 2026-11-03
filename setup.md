@@ -48,3 +48,29 @@ AI-agenten kan bruge disse relationer til at besvare spørgsmål om eksempelvis,
 4. Importér JSON-filerne fra mappen workflows i n8n.
 5. Tilpas forbindelserne til Ollama og Neo4j.
 6. Åbn workflowet Film - AI Agent, og stil et spørgsmål i chatten.
+
+#### Eksempel på filmdata:
+Et eksempel fra min Neo4j-database er filmen Inception:
+- Titel: Inception
+- År: 2010
+- Genre: Science Fiction
+- Beskrivelse: En tyv kan trænge ind i menneskers drømme og stjæle hemmeligheder.
+- Embedding: 768 tal genereret med nomic-embed-text.
+Filmene indeholder oplysninger, som AI-agenten bruger til at finde relevante film gennem Vector RAG.
+
+#### Vector Index i Neo4j:
+Jeg har oprettet et Vector Index til at søge efter film ud fra deres betydning og indhold.
+- Navn: film_embeddings
+- Type: VECTOR
+- Node: Film
+- Property: embedding
+- Antal film i indekset: 10
+- Status: ONLINE
+- Embedding-dimensioner: 768
+Indekset bruges af Vector RAG til at finde film, der passer til brugerens spørgsmål-
+
+### Oprettelse af Vector Index
+Følgende Cypher-kommando kan bruges til at oprette et Vector Index i Neo4j med 768 dimensioner og cosine similarity:
+
+CREATE VECTOR INDEX film_embeddings IF NOT EXISTS FOR (f:Film) ON (f.embedding) OPTIONS {indexConfig: {vector.dimensions: 768, vector.similarity_function: 'cosine'}};
+
