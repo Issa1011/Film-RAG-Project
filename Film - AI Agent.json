@@ -1,0 +1,200 @@
+{
+  "name": "Film - AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2a7f49a2-940f-45e8-8064-eff7e35062fc",
+      "name": "When chat message received",
+      "webhookId": "6bf61b5a-d098-4bbb-a981-481bde3579e4"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Du er en dansk AI-filmassistent, der hjælper brugere med at finde film og besvare spørgsmål om film.\nDu har adgang til to værktøjer:\ngraph_retrieval: Brug dette værktøj, når brugeren spørger om instruktører, skuespillere eller forbindelser mellem film og personer.\nvector_retrieval: Brug dette værktøj, når brugeren ønsker filmanbefalinger baseret på genre, stemning, tema eller handling.\nRegler:\n1. Brug altid mindst ét relevant søgeværktøj, før du besvarer et spørgsmål om film.\n2. Brug begge værktøjer, hvis spørgsmålet kræver både semantisk søgning og grafrelationer.\n3. Anbefal kun film, der findes i Neo4j-resultaterne.\n4. Brug kun dokumenterede DIRECTED-relationer til instruktører og ACTED_IN-relationer til skuespillere.\n5. Opfind aldrig film, relationer eller oplysninger om handlingen.\n6. Hvis databasen ikke indeholder svaret, skal du fortælle det.\n7. Svar på naturligt og grammatisk korrekt dansk.\n8. Hold svarene korte, relevante og uden gentagelser.\n9. Nævn gerne filmtitler som kilde til anbefalinger og grafrelationerne som grundlag for faktuelle svar.\n10. Vis ikke tekniske data eller similarity-scores til brugeren."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "e1cd3ab9-e5f2-4952-984d-b65a65429790",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        224,
+        304
+      ],
+      "id": "28243f20-e8d3-4984-bbb3-1ec84e28953c",
+      "name": "Ollama Chat Model1",
+      "credentials": {
+        "ollamaApi": {
+          "id": "ollamaLocalCredential",
+          "name": "Local Ollama"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Henter oplysninger fra Neo4j om film, instruktører og skuespillere. Brug dette værktøj, når brugeren spørger om personer, film eller deres relationer.",
+        "workflowId": {
+          "__rl": true,
+          "value": "u4CRLYA2H3xaD5DE",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/u4CRLYA2H3xaD5DE",
+          "cachedResultName": "Film - Graph Retrieval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "question": "={{ $fromAI(\"question\", \"Brugerens spørgsmål om film\", \"string\") }}"
+          },
+          "matchingColumns": [
+            "question"
+          ],
+          "schema": [
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        368,
+        304
+      ],
+      "id": "68eb463d-91ec-4eea-a375-aff5b6b4cb9b",
+      "name": "Call 'Film - Graph Retrieval'"
+    },
+    {
+      "parameters": {
+        "description": "Søger efter film i Neo4j ved hjælp af embeddings og vector similarity. Brug dette værktøj, når brugeren ønsker filmanbefalinger baseret på genre, stemning, handling eller lignende film.",
+        "workflowId": {
+          "__rl": true,
+          "value": "RSiiNfXcciuwPnMq",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/RSiiNfXcciuwPnMq",
+          "cachedResultName": "Film - Vector Retrieval Tool copy"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "question": "={{ $fromAI(\"question\", \"Brugerens spørgsmål eller beskrivelse af ønsket film\", \"string\") }}"
+          },
+          "matchingColumns": [
+            "question"
+          ],
+          "schema": [
+            {
+              "id": "question",
+              "displayName": "question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        304
+      ],
+      "id": "49f419b5-0399-4309-b7cc-3824547376c8",
+      "name": "Call 'Film - Vector Retrieval Tool copy'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Film - Graph Retrieval'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Film - Vector Retrieval Tool copy'": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f9fc10bf-cd1e-4307-bd99-68c95763ce7e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b35e8ccc87cc08b528ba73feb3edee83fec1beae944846e3db57043a4ff470d7"
+  },
+  "nodeGroups": [],
+  "id": "qH7Shmmy0e7kIAbt",
+  "tags": []
+}

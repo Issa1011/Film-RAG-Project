@@ -1,0 +1,100 @@
+{
+  "name": "Film - Graph Retrieval",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "question"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bf974a1a-0a38-4593-a361-50ae71038e5b",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://neo4j:7474/db/neo4j/tx/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ statements: [{ statement: \"MATCH (p:Person)-[r]->(f:Film) RETURN f.title AS film, p.name AS person, type(r) AS rolle ORDER BY film LIMIT 50\" }] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "dbafdf3d-af62-4052-bd28-8ab0b6f63f9f",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "G9O2ycq3GDNUYS5i",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.first().json.results[0].data; return [{ json: { graphFacts: rows.map(item => ({ film: item.row[0], person: item.row[1], rolle: item.row[2] })) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "0ebd4c2e-3670-475a-859e-cd905b381a13",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "a3a7ccb4-e887-4c5c-8c46-8726beba8eb2",
+  "meta": {
+    "instanceId": "b35e8ccc87cc08b528ba73feb3edee83fec1beae944846e3db57043a4ff470d7"
+  },
+  "nodeGroups": [],
+  "id": "u4CRLYA2H3xaD5DE",
+  "tags": []
+}

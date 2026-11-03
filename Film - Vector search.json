@@ -1,0 +1,269 @@
+{
+  "name": "Film - Vector search",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "542adde3-2966-4259-9c84-11cda6534433",
+              "name": "=question",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1683f4dd-b3fd-4fb4-80cc-cb96993d3f32",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { embedding: $input.first().json.embeddings[0] } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "8caa0469-211e-4d46-9518-de7145054ec0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://neo4j:7474/db/neo4j/tx/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { statements: [{ statement: \"CALL db.index.vector.queryNodes('film_embeddings', 5, $embedding) YIELD node, score RETURN node.title AS film, score ORDER BY score DESC\", parameters: { embedding: $('Code in JavaScript').first().json.embedding } }] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ],
+      "id": "5e3e3843-82ef-4f62-952b-a83b27491abf",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "G9O2ycq3GDNUYS5i",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.first().json.results[0].data; return [{ json: { films: rows.map(item => ({ title: item.row[0], score: item.row[1] })) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "61c01b9a-e590-41d9-8e4b-19008646952a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "llama3.2:latest"
+            },
+            {
+              "name": "stream",
+              "value": "={{ false }}"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ \"Du er en professionel dansk filmekspert og anbefalingsassistent. Brugerens spørgsmål: \" + $('Edit Fields').first().json.question + \". Tilgængelige film fra Neo4j: \" + JSON.stringify($json.films) + \". Din opgave er at anbefale de film, der bedst matcher brugerens ønsker. REGLER: 1. Anbefal kun film fra den angivne liste. 2. Prioritér relevans frem for antal. Anbefal højst 3 film, men gerne kun én. 3. Vælg aldrig en film, som ikke passer til brugerens spørgsmål. 4. Skriv udelukkende på naturligt, flydende og grammatisk korrekt dansk uden engelske udtryk. 5. Beskriv filmens handling faktuelt korrekt, og opfind aldrig oplysninger. 6. Forklar kort og konkret, hvorfor hver film matcher brugerens ønsker. 7. Undgå gentagelser, overdrivelser og unødvendige detaljer. 8. Hold svaret på 40-100 ord. 9. Hvis ingen film er relevante, skal du ærligt fortælle det. 10. Skriv som en hjælpsom filmekspert, ikke som en robot. 11. Brug ikke filmens relevansscore i svaret. 12. Giv et direkte svar uden lange introduktioner. SVAR NU PÅ BRUGERENS SPØRGSMÅL.\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "8531d46d-6ea9-4012-9a6f-e43adb0e6579",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        64,
+        0
+      ],
+      "id": "059550b5-2b12-409c-a592-a273693bef89",
+      "name": "When chat message received",
+      "webhookId": "13bcc352-c253-4d77-8d2e-f9dc9b32ab89"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/embed",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "nomic-embed-text:latest"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "12f5a823-f9f8-497a-9e4a-cc6d61cae363",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "95826e01-629e-431a-abe8-b72de9e42090",
+              "name": "text",
+              "value": "={{ $json.response }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "1fee876a-49bc-45e3-a853-a8f239733737",
+      "name": "Edit Fields1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "428a3416-8850-455d-9656-5735f37ea567",
+  "meta": {
+    "instanceId": "b35e8ccc87cc08b528ba73feb3edee83fec1beae944846e3db57043a4ff470d7"
+  },
+  "nodeGroups": [],
+  "id": "VP8lIzwTeoAGmbRc",
+  "tags": []
+}

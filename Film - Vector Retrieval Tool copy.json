@@ -1,0 +1,191 @@
+{
+  "name": "Film - Vector Retrieval Tool copy",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "542adde3-2966-4259-9c84-11cda6534433",
+              "name": "=question",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "4bc4b551-1b83-4b53-9486-bde3e3e43896",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { embedding: $input.first().json.embeddings[0] } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "9d36d8a2-e310-46d8-b56f-783510344ade",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://neo4j:7474/db/neo4j/tx/commit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { statements: [{ statement: \"CALL db.index.vector.queryNodes('film_embeddings', 5, $embedding) YIELD node, score RETURN node.title AS film, score ORDER BY score DESC\", parameters: { embedding: $('Code in JavaScript').first().json.embedding } }] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        0
+      ],
+      "id": "b8052762-42a9-47ff-b331-1790f4e015c9",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "G9O2ycq3GDNUYS5i",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.first().json.results[0].data; return [{ json: { films: rows.map(item => ({ title: item.row[0], score: item.row[1] })) } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "9a475629-ed64-45da-b3e5-d61d8bd13e49",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/embed",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "nomic-embed-text:latest"
+            },
+            {
+              "name": "input",
+              "value": "={{ $json.question }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "f854b7bc-8eac-4c42-a060-c8e72e69316d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "question"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        0
+      ],
+      "id": "370bb6c4-a60b-4b94-817c-c6b46650cc21",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b5ac066b-7dde-4ff8-bdcb-972d019ab649",
+  "meta": {
+    "instanceId": "b35e8ccc87cc08b528ba73feb3edee83fec1beae944846e3db57043a4ff470d7"
+  },
+  "nodeGroups": [],
+  "id": "RSiiNfXcciuwPnMq",
+  "tags": []
+}
