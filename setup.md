@@ -23,6 +23,13 @@ Og følgende relationer:
 - DIRECTED: Forbinder en instruktør med en film.
 - ACTED_IN: Forbinder en skuespiller med en film.
 
+Databasen indeholder:
+- 10 Film-noder
+- 19 Person-noder
+- 17 ACTED_IN-relationer
+- 10 DIRECTED-relationer
+- I alt 29 noder og 27 relationer
+
 #### Vector RAG
 Jeg har lavet embeddings af filmene ved hjælp af nomic-embed-text.
 
