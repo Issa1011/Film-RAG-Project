@@ -1,1 +1,2 @@
-# Film-RAG-Project
+Film RAG Project
+Om projektet
