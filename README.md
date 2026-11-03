@@ -6,13 +6,13 @@ Jeg har lavet en AI-agent, som kan svare på spørgsmål om film. Agenten bruger
 Jeg har arbejdet med både Vector RAG og Graph RAG, som er to forskellige måder at finde information på. 
 
 ### Teknologier jeg har brugt
-- n8n: Til at bygge min AI-agent og forbinde de forskellige dele.
+- n8n: Til at bygge min AI-agent og forbinde de forskellige workflows.
 - Ollama: Til at køre AI-modeller lokalt på min computer.
-- Llama 3.2: AI-modellen, der bruges til at svare på spørgsmål.
-- nomic-embed-text: Til at lave tekst om til tal (embeddings), så AI'en kan søge efter lignende information.
-- Neo4j: En grafdatabase, hvor jeg har gemt film og deres oplysninger.
-- Qdrant: En vektordatabase, som bruges til at finde film ud fra deres indhold.
-- Docker: Til at køre de forskellige programmer lokalt.
+- Llama 3.2: AI-modellen, der bruges til at forstå spørgsmål og formulere svar.
+- nomic-embed-text: Til at omdanne tekst til embeddings, så jeg kan finde film med lignende indhold.
+- Neo4j: Til at gemme film, instruktører, skuespillere og deres relationer. Jeg bruger også Neo4j som vektordatabase til at gemme embeddings og søge efter lignende film.
+- Qdrant: En vektordatabase, som jeg har arbejdet med under udviklingen, men som ikke bruges i min endelige AI-agent.
+- Docker: Til at køre programmerne lokalt på min computer.
 
 ### Hvordan virker det?
 1. Brugeren skriver et spørgsmål om en film til AI-agenten.
